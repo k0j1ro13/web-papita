@@ -740,8 +740,9 @@ function setSyncState(state, msg) {
 async function loadAll() {
   setSyncState('saving', 'cargando...');
   try {
-    const r = await fetch(FB + '.json');
+    const r    = await fetch(FB + '.json');
     const data = await r.json();
+    if (data && data.error) { setSyncState('error', '⚠ sin permisos'); console.error('Firebase:', data.error); return; }
     if (data) {
       db.ideas      = data.ideas      || {};
       db.pendientes = data.pendientes || {};
@@ -755,11 +756,13 @@ async function loadAll() {
 async function saveSection(section) {
   setSyncState('saving', 'guardando...');
   try {
-    await fetch(FB + '/' + section + '.json', {
+    const r    = await fetch(FB + '/' + section + '.json', {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(db[section])
     });
+    const json = await r.json();
+    if (json && json.error) { setSyncState('error', '⚠ sin permisos en Firebase'); console.error('Firebase:', json.error); return; }
     setSyncState('ok', '✓ guardado');
   } catch { setSyncState('error', '⚠ error al guardar'); }
 }
