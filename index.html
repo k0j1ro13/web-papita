@@ -96,13 +96,36 @@
   .login-card.ertu-card:hover { border-color: var(--ertu); background: var(--ertu-softer); }
   .login-duck  { font-size: 3.2rem; line-height: 1; }
   .login-name  { font-size: 1.5rem; font-weight: 600; font-style: italic; color: var(--text); }
-  .login-btn   {
-    font-size: .82rem; font-weight: 600; letter-spacing: .06em;
-    text-transform: uppercase; padding: .35rem 1rem; border-radius: 20px;
-    font-family: Georgia, serif;
+  .login-pass {
+    width: 100%;
+    background: var(--bg); border: 2px solid var(--border);
+    border-radius: 10px; padding: .5rem .75rem;
+    font-family: 'EB Garamond', Georgia, serif; font-size: 1rem;
+    color: var(--text); outline: none; text-align: center;
+    transition: border-color .2s; letter-spacing: .1em;
   }
+  .wan-card  .login-pass:focus { border-color: var(--wan); }
+  .ertu-card .login-pass:focus { border-color: var(--ertu); }
+  .login-pass.error { border-color: var(--red); animation: shake .3s ease; }
+  @keyframes shake {
+    0%,100%{ transform:translateX(0); }
+    25%    { transform:translateX(-6px); }
+    75%    { transform:translateX(6px); }
+  }
+  .login-btn {
+    width: 100%;
+    font-size: .85rem; font-weight: 600; letter-spacing: .06em;
+    text-transform: uppercase; padding: .42rem 1rem; border-radius: 20px;
+    font-family: Georgia, serif; border: none; cursor: pointer;
+    transition: opacity .2s;
+  }
+  .login-btn:hover { opacity: .85; }
   .wan-card  .login-btn { background: var(--wan-soft);  color: var(--wan); }
   .ertu-card .login-btn { background: var(--ertu-soft); color: var(--ertu); }
+  .login-error {
+    font-size: .85rem; color: var(--red); font-style: italic;
+    min-height: 1.2rem; text-align: center;
+  }
 
   /* ── HEADER ─────────────────────────────────────────────────────── */
   header {
@@ -569,15 +592,21 @@
   <div class="login-sub">vuestra agenda de planes</div>
   <div class="login-question">¿quién eres?</div>
   <div class="login-cards">
-    <div class="login-card wan-card" onclick="login('wan')">
+    <div class="login-card wan-card">
       <div class="login-duck">🦆</div>
       <div class="login-name">wan</div>
-      <div class="login-btn">soy yo</div>
+      <input class="login-pass" id="pass-wan" type="password" placeholder="contraseña"
+        onkeydown="if(event.key==='Enter') tryLogin('wan')">
+      <div class="login-error" id="err-wan"></div>
+      <button class="login-btn" onclick="tryLogin('wan')">entrar</button>
     </div>
-    <div class="login-card ertu-card" onclick="login('ertu')">
+    <div class="login-card ertu-card">
       <div class="login-duck">🦆</div>
       <div class="login-name">ertu</div>
-      <div class="login-btn">soy yo</div>
+      <input class="login-pass" id="pass-ertu" type="password" placeholder="contraseña"
+        onkeydown="if(event.key==='Enter') tryLogin('ertu')">
+      <div class="login-error" id="err-ertu"></div>
+      <button class="login-btn" onclick="tryLogin('ertu')">entrar</button>
     </div>
   </div>
 </div>
@@ -713,6 +742,22 @@ let calYear, calMonth;
 let sseSource      = null;
 
 // ── LOGIN ─────────────────────────────────────────────────────────────
+const PASSWORDS = { wan: '20', ertu: '20' };
+
+function tryLogin(who) {
+  const input = document.getElementById('pass-' + who);
+  const err   = document.getElementById('err-' + who);
+  if (input.value === PASSWORDS[who]) {
+    err.textContent = '';
+    login(who);
+  } else {
+    err.textContent = 'contraseña incorrecta';
+    input.classList.add('error');
+    input.value = '';
+    setTimeout(() => input.classList.remove('error'), 400);
+  }
+}
+
 function login(who) {
   currentUser    = who;
   selectedAuthor = who;
