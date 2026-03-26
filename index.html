@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Wan & Ertu</title>
+<title>wan & ertu</title>
 <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&display=swap" rel="stylesheet">
 <style>
   :root {
@@ -447,7 +447,7 @@
 <!-- HEADER -->
 <header>
   <div>
-    <div class="header-title">Wan <span class="header-amp">&</span> Ertu</div>
+    <div class="header-title">wan <span class="header-amp">&</span> ertu</div>
     <div class="header-sub">Nuestros planes</div>
   </div>
   <div class="sync-pill">
@@ -535,10 +535,10 @@
     <label>¿Quién propone?</label>
     <div class="author-selector">
       <button class="author-btn wan-sel" id="authorWan" onclick="selectAuthor('wan')">
-        <div class="avatar avatar-wan">W</div> Wan
+        🦆 wan
       </button>
       <button class="author-btn" id="authorErtu" onclick="selectAuthor('ertu')">
-        <div class="avatar avatar-ertu">E</div> Ertu
+        🦆 ertu
       </button>
     </div>
   </div>
@@ -653,7 +653,7 @@ function esc(s) {
   return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
 function authorTag(a) {
-  return `<span class="author-tag ${a}">${a==='wan'?'Wan':'Ertu'}</span>`;
+  return `<span class="author-tag ${a}">🦆 ${a==='wan'?'wan':'ertu'}</span>`;
 }
 
 // ── TABS ─────────────────────────────────────────────────────────────
