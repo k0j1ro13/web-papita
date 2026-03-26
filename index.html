@@ -121,7 +121,7 @@
   @keyframes blink { 0%,100%{opacity:1} 50%{opacity:.2} }
 
   /* ── LAYOUT ── */
-  .layout { display:grid; grid-template-columns:1fr 365px; height:calc(100vh - var(--header-h)); margin-top:var(--header-h); }
+  .layout { display:grid; grid-template-columns:1fr 420px; height:calc(100vh - var(--header-h)); margin-top:var(--header-h); }
 
   /* ── LEFT PANEL ── */
   .left-panel { display:flex; flex-direction:column; border-right:2px solid var(--border); overflow:hidden; }
@@ -288,7 +288,7 @@
   .chat-empty { text-align:center; color:var(--text2); font-style:italic; font-size:.95rem; padding:2rem .5rem; flex:1; display:flex; align-items:center; justify-content:center; }
 
   /* ── CALENDAR ── */
-  .cal-box { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); overflow:hidden; box-shadow:var(--shadow); flex-shrink:0; }
+  .cal-box { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); overflow:hidden; box-shadow:var(--shadow); flex:1; min-height:0; display:flex; flex-direction:column; }
   .cal-nav { background:var(--text); padding:.95rem 1.1rem; display:flex; align-items:center; gap:.5rem; position:relative; }
   .cal-nav::after { content:''; position:absolute; bottom:0; left:0; right:0; height:2px; background:linear-gradient(to right,var(--wan),var(--ertu)); }
   .cal-nav h2 { font-family:'EB Garamond',Georgia,serif; font-size:1.1rem; font-style:italic; font-weight:500; flex:1; text-align:center; text-transform:capitalize; color:#fdf8f2; }
@@ -297,7 +297,7 @@
   .nav-btn.today-btn { width:auto; padding:0 .75rem; font-size:.63rem; font-weight:700; letter-spacing:.08em; text-transform:uppercase; font-family:Georgia,serif; }
   .cal-weekdays { display:grid; grid-template-columns:repeat(7,1fr); background:var(--bg2); padding:.5rem .6rem .25rem; }
   .cal-weekdays span { text-align:center; font-size:.63rem; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:var(--text2); padding:.2rem; font-family:Georgia,serif; }
-  .cal-grid { display:grid; grid-template-columns:repeat(7,1fr); gap:2px; padding:.4rem .6rem .7rem; }
+  .cal-grid { display:grid; grid-template-columns:repeat(7,1fr); gap:2px; padding:.4rem .6rem .7rem; flex:1; align-content:start; }
   .cal-day { aspect-ratio:1; display:flex; flex-direction:column; align-items:center; justify-content:center; border-radius:9px; cursor:pointer; transition:all .15s; border:2px solid transparent; font-size:.9rem; font-weight:500; color:var(--text2); gap:2px; user-select:none; font-family:Georgia,serif; }
   .cal-day.other-month { color:rgba(125,92,56,.25); cursor:default; }
   .cal-day.empty { cursor:default; }
@@ -309,14 +309,16 @@
   .day-dot.wan  { background:var(--wan); }
   .day-dot.ertu { background:var(--ertu); }
 
-  /* ── DAY PANEL ── */
-  .day-panel { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); overflow:hidden; box-shadow:var(--shadow); flex:1; min-height:0; display:flex; flex-direction:column; }
-  .day-panel-header { background:var(--bg2); border-bottom:1px solid var(--border); padding:.85rem 1.1rem; flex-shrink:0; }
-  .day-panel-date   { font-family:'EB Garamond',Georgia,serif; font-size:1.05rem; font-style:italic; text-transform:capitalize; color:var(--text); }
-  .day-panel-body   { padding:.9rem 1rem; flex:1; min-height:0; overflow-y:auto; }
-  .day-panel-body::-webkit-scrollbar { width:4px; }
-  .day-panel-body::-webkit-scrollbar-thumb { background:var(--bg3); border-radius:2px; }
-  .day-panel-footer { padding:.5rem 1rem .9rem; border-top:1px solid var(--border); flex-shrink:0; }
+  /* ── ADD CAL BUTTON ── */
+  .btn-add-cal {
+    flex-shrink:0; width:100%; background:none; border:2px dashed var(--border2);
+    border-radius:10px; padding:.7rem; color:var(--text2);
+    font-family:'EB Garamond',Georgia,serif; font-size:1rem;
+    cursor:pointer; transition:all .2s;
+  }
+  .btn-add-cal:hover { border-color:var(--wan); color:var(--wan); background:var(--wan-softer); }
+
+  /* ── DAY EVENTS (left panel) ── */
   .day-event {
     display:flex; gap:.65rem; align-items:flex-start; padding:.72rem .9rem;
     background:var(--bg); border:1px solid var(--border); border-radius:10px;
@@ -417,7 +419,8 @@
     .layout { grid-template-columns:1fr; height:auto; overflow:visible; }
     .left-panel { height:auto; overflow:visible; border-right:none; border-bottom:2px solid var(--border); }
     .left-content { overflow:visible; padding-bottom:1.5rem; }
-    .right-panel { overflow:visible; }
+    .right-panel { overflow:visible; min-height:0; }
+    .cal-box { flex:none; }
     .fab { left:50%; }
     .chat-panel { height:70vh; }
   }
@@ -483,6 +486,7 @@
     <div class="tabs">
       <button class="tab-btn active" id="tab-ideas"     onclick="switchTab('ideas')">💡 Ideas <span class="tab-badge" id="badge-ideas">0</span></button>
       <button class="tab-btn"        id="tab-pendientes" onclick="switchTab('pendientes')">📋 Pendientes <span class="tab-badge" id="badge-pendientes">0</span></button>
+      <button class="tab-btn"        id="tab-dias"       onclick="switchTab('dias')">📅 Días <span class="tab-badge" id="badge-dias"></span></button>
       <button class="tab-btn"        id="tab-gastos"     onclick="switchTab('gastos')">💰 Gastos <span class="tab-badge" id="badge-gastos">0</span></button>
       <button class="tab-btn"        id="tab-chat"       onclick="switchTab('chat')">💬 Chat <span class="tab-badge" id="badge-chat">0</span></button>
     </div>
@@ -504,6 +508,15 @@
           <span class="section-count" id="count-pendientes">0 pendientes</span>
         </div>
         <div id="pendientesList"></div>
+      </div>
+
+      <!-- DÍAS -->
+      <div class="tab-panel" id="panel-dias">
+        <div class="section-header">
+          <div class="section-title" id="dayPanelDate">Selecciona un día</div>
+          <span class="section-count" id="count-dias"></span>
+        </div>
+        <div id="dayEventsList"></div>
       </div>
 
       <!-- GASTOS -->
@@ -552,17 +565,7 @@
       </div>
       <div class="cal-grid" id="calGrid"></div>
     </div>
-    <div class="day-panel">
-      <div class="day-panel-header">
-        <div class="day-panel-date" id="dayPanelDate">Selecciona un día</div>
-      </div>
-      <div class="day-panel-body" id="dayPanelBody">
-        <div class="no-events">Toca un día para ver o añadir planes</div>
-      </div>
-      <div class="day-panel-footer">
-        <button class="btn-add-event" id="btnAddEvent" style="display:none" onclick="openCalDrawer(selectedDate)">+ Añadir plan a este día</button>
-      </div>
-    </div>
+    <button class="btn-add-cal" id="btnAddEvent" onclick="openCalDrawer(selectedDate)">+ Añadir plan a este día</button>
   </div>
 
 </div>
@@ -770,8 +773,8 @@ function switchTab(tab) {
   document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
   document.getElementById('tab-'+tab).classList.add('active');
   document.getElementById('panel-'+tab).classList.add('active');
-  // FAB hidden on chat (has inline input)
-  document.getElementById('fabBtn').classList.toggle('hidden', tab==='chat');
+  // FAB hidden on chat (inline input) and días (button in right panel)
+  document.getElementById('fabBtn').classList.toggle('hidden', tab==='chat'||tab==='dias');
   if (tab==='chat') {
     unreadChat=0;
     updateBadges();
@@ -950,15 +953,15 @@ function renderCalendar() {
   if(selectedDate) renderDayPanel(selectedDate);
 }
 
-function selectDay(iso) { selectedDate=iso; renderCalendar(); }
+function selectDay(iso) { selectedDate=iso; renderCalendar(); switchTab('dias'); }
 
 function renderDayPanel(iso) {
-  document.getElementById('dayPanelDate').textContent=fmtDate(iso);
-  document.getElementById('btnAddEvent').style.display='block';
-  const evs=db.dias[iso]?Object.entries(db.dias[iso]).sort((a,b)=>a[1].ts-b[1].ts):[];
+  document.getElementById('dayPanelDate').textContent = fmtDate(iso);
+  const evs = db.dias[iso] ? Object.entries(db.dias[iso]).sort((a,b)=>a[1].ts-b[1].ts) : [];
+  document.getElementById('count-dias').textContent = evs.length ? evs.length+(evs.length===1?' plan':' planes') : '';
   let html='';
   if(evs.length){
-    html+=evs.map(([id,ev])=>`
+    html += evs.map(([id,ev])=>`
       <div class="day-event ${ev.autor}-event">
         <div class="day-event-body">
           <div class="day-event-text">${esc(ev.texto)}</div>
@@ -968,7 +971,7 @@ function renderDayPanel(iso) {
         <button class="btn-del" id="del-dia-${iso}-${id}" onclick="deleteDayEvent('${iso}','${id}')">✕</button>
       </div>`).join('');
   } else { html=`<div class="no-events">Sin planes este día</div>`; }
-  document.getElementById('dayPanelBody').innerHTML=html;
+  document.getElementById('dayEventsList').innerHTML = html;
 }
 
 function changeMonth(dir){
@@ -993,7 +996,7 @@ async function deleteDayEvent(iso,id){
 
 // ── DRAWER ────────────────────────────────────────────────────────────
 function openDrawer(){
-  drawerMode=currentTab==='gastos'?'gastos':currentTab==='chat'?'ideas':currentTab;
+  drawerMode=currentTab==='gastos'?'gastos':currentTab==='chat'||currentTab==='dias'?'ideas':currentTab;
   drawerDayIso=null; setupDrawer();
   document.getElementById('overlay').classList.add('open');
   document.getElementById('drawer').classList.add('open');
