@@ -877,13 +877,19 @@ function selectAuthor(who) {
 const EMOJIS = ['✨','🌟','🎉','🏖️','🎬','🍽️','🌿','🎵','🏔️','🚗','🎮','🌙','☕','🍕','🎨','🏋️','📸','🌊','🎭','💃','🎸','🌺','🍷','🎪','🏡','🛵','🧳','🎯','🤿','⛷️'];
 
 function buildEmojiPicker() {
-  document.getElementById('emojiPicker').innerHTML = EMOJIS.map(e =>
-    `<div class="emoji-opt${e===selectedEmoji?' selected':''}" onclick="pickEmoji('${e}')">${e}</div>`
+  const picker = document.getElementById('emojiPicker');
+  picker.innerHTML = EMOJIS.map((e, i) =>
+    `<div class="emoji-opt${e===selectedEmoji?' selected':''}" data-i="${i}">${e}</div>`
   ).join('');
+  picker.onclick = ev => {
+    const el = ev.target.closest('.emoji-opt');
+    if (!el) return;
+    pickEmoji(EMOJIS[parseInt(el.dataset.i)]);
+  };
 }
 function pickEmoji(e) {
   selectedEmoji = e;
-  document.querySelectorAll('.emoji-opt').forEach(el => el.classList.toggle('selected', el.textContent===e));
+  document.querySelectorAll('.emoji-opt').forEach(el => el.classList.toggle('selected', EMOJIS[parseInt(el.dataset.i)]===e));
 }
 
 async function submitDrawer() {
