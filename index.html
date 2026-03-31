@@ -413,6 +413,23 @@
   @keyframes fadeUp  { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
   @keyframes fadeIn  { from{opacity:0} to{opacity:1} }
 
+  /* ── MENÚ DEL DÍA ── */
+  .menu-section { margin-top:1.3rem; padding-top:1.1rem; border-top:1px solid var(--border); }
+  .menu-section-title { font-size:.7rem; text-transform:uppercase; letter-spacing:.12em; color:var(--text2); font-family:Georgia,serif; margin-bottom:.65rem; }
+  .menu-slot {
+    display:flex; align-items:center; gap:.7rem;
+    padding:.58rem .8rem; background:var(--bg); border:1px solid var(--border);
+    border-radius:9px; margin-bottom:.42rem; transition:border-color .15s,background .15s;
+    cursor:text;
+  }
+  .menu-slot:hover { border-color:var(--border2); }
+  .menu-slot.editing { border-color:var(--wan); background:var(--surface); }
+  .menu-slot-icon  { font-size:1.15rem; flex-shrink:0; line-height:1; }
+  .menu-slot-label { font-size:.68rem; text-transform:uppercase; letter-spacing:.09em; color:var(--text3); font-family:Georgia,serif; width:72px; flex-shrink:0; }
+  .menu-slot-val   { flex:1; font-size:.97rem; color:var(--text); }
+  .menu-slot-val.empty { color:var(--text3); font-style:italic; }
+  .menu-slot-input { flex:1; background:none; border:none; outline:none; font-family:'EB Garamond',Georgia,serif; font-size:.97rem; color:var(--text); width:100%; }
+
   /* ── RESPONSIVE ── */
   @media (max-width:780px) {
     body { overflow:auto; }
@@ -517,6 +534,7 @@
           <span class="section-count" id="count-dias"></span>
         </div>
         <div id="dayEventsList"></div>
+        <div id="dayMenuSection"></div>
       </div>
 
       <!-- GASTOS -->
@@ -625,7 +643,7 @@
 <script>
 const FB = 'https://el-solar-c0e2a-default-rtdb.europe-west1.firebasedatabase.app/pareja';
 
-let db = { ideas:{}, pendientes:{}, dias:{}, gastos:{}, mensajes:{} };
+let db = { ideas:{}, pendientes:{}, dias:{}, gastos:{}, mensajes:{}, menus:{} };
 let currentTab     = 'ideas';
 let currentUser    = null;
 let selectedDate   = null;
@@ -691,6 +709,7 @@ async function loadAll() {
       db.dias      = data.dias      || {};
       db.gastos    = data.gastos    || {};
       db.mensajes  = data.mensajes  || {};
+      db.menus     = data.menus     || {};
     }
     setSyncState('ok','✓ sincronizado');
     renderAll();
@@ -717,12 +736,13 @@ function startSync() {
       const msg = JSON.parse(e.data);
       if (!msg.data) return;
       const prev = Object.keys(db.mensajes||{}).length;
-      if      (msg.path==='/')             { db.ideas=msg.data.ideas||{}; db.pendientes=msg.data.pendientes||{}; db.dias=msg.data.dias||{}; db.gastos=msg.data.gastos||{}; db.mensajes=msg.data.mensajes||{}; }
+      if      (msg.path==='/')             { db.ideas=msg.data.ideas||{}; db.pendientes=msg.data.pendientes||{}; db.dias=msg.data.dias||{}; db.gastos=msg.data.gastos||{}; db.mensajes=msg.data.mensajes||{}; db.menus=msg.data.menus||{}; }
       else if (msg.path==='/ideas')        { db.ideas      =msg.data||{}; }
       else if (msg.path==='/pendientes')   { db.pendientes =msg.data||{}; }
       else if (msg.path==='/dias')         { db.dias       =msg.data||{}; }
       else if (msg.path==='/gastos')       { db.gastos     =msg.data||{}; }
       else if (msg.path==='/mensajes')     { db.mensajes   =msg.data||{}; }
+      else if (msg.path==='/menus')        { db.menus      =msg.data||{}; }
       const cur = Object.keys(db.mensajes||{}).length;
       if (cur > prev && currentTab !== 'chat') unreadChat += (cur - prev);
       renderAll();
@@ -972,6 +992,60 @@ function renderDayPanel(iso) {
       </div>`).join('');
   } else { html=`<div class="no-events">Sin planes este día</div>`; }
   document.getElementById('dayEventsList').innerHTML = html;
+  renderMenuSection(iso);
+}
+
+// ── MENÚ DEL DÍA ──────────────────────────────────────────────────────
+const MENU_SLOTS = [
+  { key:'desayuno', icon:'🌅', label:'Desayuno' },
+  { key:'almuerzo', icon:'🍽️', label:'Almuerzo' },
+  { key:'cena',     icon:'🌙', label:'Cena' }
+];
+
+function renderMenuSection(iso) {
+  const section = document.getElementById('dayMenuSection');
+  if (!section) return;
+  if (!iso) { section.innerHTML=''; return; }
+  const menu = (db.menus && db.menus[iso]) || {};
+  section.innerHTML = `
+    <div class="menu-section">
+      <div class="menu-section-title">🍴 Menú del día</div>
+      ${MENU_SLOTS.map(s=>`
+        <div class="menu-slot" id="slot-${s.key}" onclick="editMenuSlot('${iso}','${s.key}')">
+          <span class="menu-slot-icon">${s.icon}</span>
+          <span class="menu-slot-label">${s.label}</span>
+          <span class="menu-slot-val${menu[s.key]?'':' empty'}" id="slotval-${s.key}">${menu[s.key]?esc(menu[s.key]):'Sin planificar'}</span>
+        </div>`).join('')}
+    </div>`;
+}
+
+function editMenuSlot(iso, key) {
+  const slot = document.getElementById('slot-'+key);
+  const valEl = document.getElementById('slotval-'+key);
+  if (!slot || !valEl || slot.classList.contains('editing')) return;
+  const menu = (db.menus && db.menus[iso]) || {};
+  const current = menu[key] || '';
+  slot.classList.add('editing');
+  valEl.outerHTML = `<input class="menu-slot-input" id="slotinput-${key}" value="${esc(current)}" placeholder="¿Qué vais a comer?">`;
+  const input = document.getElementById('slotinput-'+key);
+  input.focus(); input.select();
+  let saved = false;
+  const save = async () => {
+    if (saved) return; saved = true;
+    const val = input.value.trim();
+    if (!db.menus) db.menus = {};
+    if (!db.menus[iso]) db.menus[iso] = {};
+    if (val) db.menus[iso][key] = val;
+    else delete db.menus[iso][key];
+    if (!Object.keys(db.menus[iso]).length) delete db.menus[iso];
+    await saveSection('menus');
+    renderMenuSection(iso);
+  };
+  input.addEventListener('blur', save);
+  input.addEventListener('keydown', e => {
+    if (e.key==='Enter') { e.preventDefault(); input.blur(); }
+    if (e.key==='Escape') { saved=true; renderMenuSection(iso); }
+  });
 }
 
 function changeMonth(dir){
